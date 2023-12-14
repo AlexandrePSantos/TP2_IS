@@ -38,6 +38,7 @@ if __name__ == "__main__":
         server.register_function(import_xml)
         server.register_function(soft_delete_doc)
         server.register_function(list_undeleted_docs)
+        # TODO - Query functions registration
 
         # start the server
         print(f"Starting the RPC Server in port {PORT}...")
