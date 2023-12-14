@@ -48,6 +48,8 @@ if __name__ == "__main__":
 
         print("Checking updates...")
         # !TODO: 1- Execute a SELECT query to check for any changes on the table
+        cursor_org = db_dst.cursor()
+
         # !TODO: 2- Execute a SELECT queries with xpath to retrieve the data we want to store in the relational db
         print("Cars to store in the relational db:")
         

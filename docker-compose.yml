@@ -176,16 +176,6 @@ services:
     environment:
       API_PORT: ${API_PORT}
 
-  # Container that runs a golang exmaple
-  golang-example:
-    container_name: golang-example
-    build: docker/images/golang
-    volumes:
-      - ./src/examples/golang:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    environment:
-      USE_DEV_MODE: ${USE_DEV_MODE}
-
   broker:
     container_name: rabbitmq
     image: "rabbitmq:3.12.9-management-alpine"

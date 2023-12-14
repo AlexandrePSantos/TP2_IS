@@ -1,12 +1,15 @@
 import asyncio
 import time
 import uuid
-
+import psycopg2
 import os
+
+from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileCreatedEvent
 
 from utils.to_xml_converter import CSVtoXMLConverter
+from utils.xml_converter import CSVtoXMLConverter
 
 def get_csv_files_in_input_folder():
     return [os.path.join(dp, f) for dp, dn, filenames in os.walk(CSV_INPUT_PATH) for f in filenames if
@@ -47,11 +50,79 @@ class CSVHandler(FileSystemEventHandler):
         convert_csv_to_xml(csv_path, xml_path)
         print(f"new xml file generated: '{xml_path}'")
 
-        # !TODO: we should store the XML document into the imported_documents table
+        # get the file size
+        file_size = Path(csv_path).stat().st_size
+        
+        # update the converted_documents table
+        connection = None
+        cursor = None
+        try:
+            connection = self.connect_connection()
+            cursor = self.connect_cursor(connection)
 
+            cursor.execute(f"insert into converted_documents(src,file_size,dst) values ('{csv_path}', {file_size}, '{xml_path}')")
+
+            connection.commit()
+
+            if connection:
+                cursor.close()
+                connection.close()
+
+        except (Exception, psycopg2.Error) as error:
+            print("Failed to insert data", error)
+
+        finally:
+            if connection:
+                cursor.close()
+                connection.close()
+                
+        # !TODO: we should store the XML document into the imported_documents table
+       #open the file to send the xml data
+        with open(xml_path,encoding='latin-1') as file:
+            data = file.read()
+            file.close()
+            
+        connection = None
+        cursor = None
+        try:
+            connection = self.connect_connection()
+            cursor = self.connect_cursor(connection)
+
+            cursor.execute("INSERT INTO imported_documents(file_name, xml) VALUES(%s, %s)", (xml_path, data))
+
+            connection.commit()
+
+            if connection:
+                cursor.close()
+                connection.close()
+
+        except (Exception, psycopg2.Error) as error:
+            print("Failed to insert data", error)
+
+        finally:
+            if connection:
+                cursor.close()
+                connection.close()
+            
     async def get_converted_files(self):
-        # !TODO: you should retrieve from the database the files that were already converted before
-        return []
+        # !DONE: you should retrieve from the database the files that were already converted before
+        # Connect to the database
+        connection = psycopg2.connect(user="is", password="is", host="db-xml", database="is")
+
+        # Create a cursor to execute queries
+        cur = connection.cursor()
+
+        # Execute a SELECT query to retrieve the source files from the converted_documents table
+        cur.execute("SELECT src FROM converted_documents")
+
+        # Fetch all the results
+        converted_files = [item[0] for item in cur.fetchall()]
+
+        # Close the cursor and the connection
+        cur.close()
+        connection.close()
+
+        return converted_files
 
     def on_created(self, event):
         if not event.is_directory and event.src_path.endswith(".csv"):
