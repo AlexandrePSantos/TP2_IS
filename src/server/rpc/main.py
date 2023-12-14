@@ -4,6 +4,9 @@ from xmlrpc.server import SimpleXMLRPCRequestHandler
 
 from functions.string_length import string_length
 from functions.string_reverse import string_reverse
+# XML imports
+from functions.db_functions import import_xml, soft_delete_doc, list_undeleted_docs
+# TODO - Query imports
 
 PORT = int(sys.argv[1]) if len(sys.argv) >= 2 else 9000
 
@@ -30,6 +33,11 @@ if __name__ == "__main__":
         # register both functions
         server.register_function(string_reverse)
         server.register_function(string_length)
+        
+        # XML functions registration
+        server.register_function(import_xml)
+        server.register_function(soft_delete_doc)
+        server.register_function(list_undeleted_docs)
 
         # start the server
         print(f"Starting the RPC Server in port {PORT}...")
