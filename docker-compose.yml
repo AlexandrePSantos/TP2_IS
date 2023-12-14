@@ -186,16 +186,6 @@ services:
     environment:
       USE_DEV_MODE: ${USE_DEV_MODE}
 
-  # Container that runs a elixir exmaple
-  elixir-example:
-    container_name: elixir-example
-    build: docker/images/elixir
-    volumes:
-      - ./src/examples/elixir:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    environment:
-      USE_DEV_MODE: ${USE_DEV_MODE}
-
   broker:
     container_name: rabbitmq
     image: "rabbitmq:3.12.9-management-alpine"
