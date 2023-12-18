@@ -48,6 +48,23 @@ services:
       - db-xml
       - db-rel
 
+  watcher:
+      container_name: watcher
+      build: 
+        context: docker/images/watcher
+        dockerfile: Dockerfile
+      volumes:
+        - ./src/daemon/watcher:/usr/src/app
+      environment:
+        DB_HOST: db-xml
+        DB_USER: is
+        DB_PASSWORD: is
+        DB_NAME: is
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_USER: "$RABBITMQ_DEFAULT_USER"
+        RABBITMQ_PASSWORD: "$RABBITMQ_DEFAULT_PASS"
+        RABBITMQ_VHOST: "$RABBITMQ_DEFAULT_VHOST"
+        
   # Container that automatically migrates data from db-xml to db-rel
   gis-updater:
     container_name: gis-updater
