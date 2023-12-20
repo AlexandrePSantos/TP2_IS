@@ -82,5 +82,27 @@ def list_undeleted_docs():
     except (Exception, psycopg2.Error) as error:
         print("Failed to fetch data", error)
 
-# Query functions
+# Query functions (Using XPATH)
 
+# Query 1
+# Return all the info of a car by its id 
+# def get_releases_from_car_by_id(car_id):
+#     try:
+#         connection = connect_connection()
+#         cursor = connect_cursor(connection)
+#         cursor.execute("...")
+
+#         query = cursor.fetchall()
+
+#         return query
+    
+#     except (Exception, psycopg2.Error) as error:
+#         print("Failed to fetch data", error)
+
+# Query 2
+
+# Query 3
+
+# Query 4
+
+# Query 5

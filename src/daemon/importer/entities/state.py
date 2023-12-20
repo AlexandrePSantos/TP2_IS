@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-from functions.entities.city import City
+from entities.city import City
 
 class State:
 
