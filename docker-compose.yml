@@ -10,6 +10,11 @@ services:
       - xml-data:/var/lib/postgresql/shared-data/
     ports:
       - "${EXP_PORT_PG_XML}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U is"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Database to store Relational data
   db-rel:
@@ -19,6 +24,11 @@ services:
       - rel-data:/var/lib/postgresql/shared-data/
     ports:
       - "${EXP_PORT_PG_REL}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U is"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Container that automatically converts CSV to XML and then imports the XML to db-xml
   importer:
@@ -45,40 +55,25 @@ services:
       USE_DEV_MODE: ${USE_DEV_MODE}
       POLLING_FREQ: ${POLLING_FREQ}
     depends_on:
-      - db-xml
-      - db-rel
-
-  # watcher:
-  #     container_name: watcher
-  #     build: 
-  #       context: docker/images/watcher
-  #       dockerfile: Dockerfile
-  #     volumes:
-  #       - ./src/daemon/watcher:/usr/src/app
-  #     environment:
-  #       DB_HOST: db-xml
-  #       DB_USER: is
-  #       DB_PASSWORD: is
-  #       DB_NAME: is
-  #       RABBITMQ_HOST: rabbitmq
-  #       RABBITMQ_USER: "$RABBITMQ_DEFAULT_USER"
-  #       RABBITMQ_PASSWORD: "$RABBITMQ_DEFAULT_PASS"
-  #       RABBITMQ_VHOST: "$RABBITMQ_DEFAULT_VHOST"
+      db-xml:
+        condition: service_healthy
+      db-rel:
+        condition: service_healthy
         
   # Container that automatically migrates data from db-xml to db-rel
-  gis-updater:
-    container_name: gis-updater
-    build: docker/images/python
-    volumes:
-      - ./src/daemon/gis-updater:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    environment:
-      USE_DEV_MODE: ${USE_DEV_MODE}
-      POLLING_FREQ: ${POLLING_FREQ}
-      ENTITIES_PER_ITERATION: ${ENTITIES_PER_ITERATION}
-    depends_on:
-      - api-gis
-      - api-entities
+  # gis-updater:
+  #   container_name: gis-updater
+  #   build: docker/images/python
+  #   volumes:
+  #     - ./src/daemon/gis-updater:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   environment:
+  #     USE_DEV_MODE: ${USE_DEV_MODE}
+  #     POLLING_FREQ: ${POLLING_FREQ}
+  #     ENTITIES_PER_ITERATION: ${ENTITIES_PER_ITERATION}
+  #   depends_on:
+  #     - api-gis
+  #     - api-entities
 
   # Container that runs the RPC server
   rpc-server:
@@ -94,104 +89,104 @@ services:
       - db-xml
 
   # Container that runs the web interface for displaying entities
-  frontend-ent:
-    container_name: frontend-ent
-    build: docker/images/web
-    volumes:
-      - ./src/frontend/ent:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    ports:
-      - "${EXT_PORT_FRONTEND_ENT}:${EXT_PORT_FRONTEND_ENT}"
-    environment:
-      USE_DEV_MODE: ${USE_DEV_MODE}
-      WEB_PORT: ${EXT_PORT_FRONTEND_ENT}
-      API_ENTITIES_URL: "localhost:${EXT_PORT_API_ENTITIES}"
-    depends_on:
-      - api-entities
+  # frontend-ent:
+  #   container_name: frontend-ent
+  #   build: docker/images/web
+  #   volumes:
+  #     - ./src/frontend/ent:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   ports:
+  #     - "${EXT_PORT_FRONTEND_ENT}:${EXT_PORT_FRONTEND_ENT}"
+  #   environment:
+  #     USE_DEV_MODE: ${USE_DEV_MODE}
+  #     WEB_PORT: ${EXT_PORT_FRONTEND_ENT}
+  #     API_ENTITIES_URL: "localhost:${EXT_PORT_API_ENTITIES}"
+  #   depends_on:
+  #     - api-entities
 
   # Container that runs the web interface for displaying the map
-  frontend-gis:
-    container_name: frontend-gis
-    build: docker/images/web
-    volumes:
-      - ./src/frontend/gis:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    ports:
-      - "${EXT_PORT_FRONTEND_GIS}:${EXT_PORT_FRONTEND_GIS}"
-    environment:
-      USE_DEV_MODE: ${USE_DEV_MODE}
-      WEB_PORT: ${EXT_PORT_FRONTEND_GIS}
-      API_GIS_URL: "localhost:${EXT_PORT_API_GIS}"
-    depends_on:
-      - api-gis
+  # frontend-gis:
+  #   container_name: frontend-gis
+  #   build: docker/images/web
+  #   volumes:
+  #     - ./src/frontend/gis:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   ports:
+  #     - "${EXT_PORT_FRONTEND_GIS}:${EXT_PORT_FRONTEND_GIS}"
+  #   environment:
+  #     USE_DEV_MODE: ${USE_DEV_MODE}
+  #     WEB_PORT: ${EXT_PORT_FRONTEND_GIS}
+  #     API_GIS_URL: "localhost:${EXT_PORT_API_GIS}"
+  #   depends_on:
+  #     - api-gis
 
   # Container that runs the web interface for displaying the map
-  frontend-proc:
-    container_name: frontend-proc
-    build: docker/images/web
-    volumes:
-      - ./src/frontend/proc:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    ports:
-      - "${EXT_PORT_FRONTEND_PROC}:${EXT_PORT_FRONTEND_PROC}"
-    environment:
-      USE_DEV_MODE: ${USE_DEV_MODE}
-      WEB_PORT: ${EXT_PORT_FRONTEND_PROC}
-      API_GRAPHQL_URL: "localhost:${EXT_PORT_API_GRAPHQL}"
-      API_PROC_URL: "localhost:${EXT_PORT_API_PROC}"
-    depends_on:
-      - api-proc
-      - api-graphql
+  # frontend-proc:
+  #   container_name: frontend-proc
+  #   build: docker/images/web
+  #   volumes:
+  #     - ./src/frontend/proc:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   ports:
+  #     - "${EXT_PORT_FRONTEND_PROC}:${EXT_PORT_FRONTEND_PROC}"
+  #   environment:
+  #     USE_DEV_MODE: ${USE_DEV_MODE}
+  #     WEB_PORT: ${EXT_PORT_FRONTEND_PROC}
+  #     API_GRAPHQL_URL: "localhost:${EXT_PORT_API_GRAPHQL}"
+  #     API_PROC_URL: "localhost:${EXT_PORT_API_PROC}"
+  #   depends_on:
+  #     - api-proc
+  #     - api-graphql
 
   # Container that runs the API for entities
-  api-entities:
-    container_name: api-entities
-    build: docker/images/javascript
-    volumes:
-      - ./src/api/entities:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    ports:
-      - "${EXT_PORT_API_ENTITIES}:${API_PORT}"
-    environment:
-      USE_DEV_MODE: ${USE_DEV_MODE}
-      PORT: ${API_PORT}
-      DATABASE_URL: postgresql://is:is@db-rel:5432/is?schema=public
+  # api-entities:
+  #   container_name: api-entities
+  #   build: docker/images/javascript
+  #   volumes:
+  #     - ./src/api/entities:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   ports:
+  #     - "${EXT_PORT_API_ENTITIES}:${API_PORT}"
+  #   environment:
+  #     USE_DEV_MODE: ${USE_DEV_MODE}
+  #     PORT: ${API_PORT}
+  #     DATABASE_URL: postgresql://is:is@db-rel:5432/is?schema=public
 
   # Container that runs the API for gis
-  api-gis:
-    container_name: api-gis
-    build: docker/images/python
-    volumes:
-      - ./src/api/gis:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    ports:
-      - "${EXT_PORT_API_GIS}:${API_PORT}"
-    environment:
-      API_PORT: ${API_PORT}
+  # api-gis:
+  #   container_name: api-gis
+  #   build: docker/images/python
+  #   volumes:
+  #     - ./src/api/gis:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   ports:
+  #     - "${EXT_PORT_API_GIS}:${API_PORT}"
+  #   environment:
+  #     API_PORT: ${API_PORT}
 
   # Container that runs the API for procedures
-  api-proc:
-    container_name: api-proc
-    build: docker/images/python
-    volumes:
-      - ./src/api/proc:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    ports:
-      - "${EXT_PORT_API_PROC}:${API_PORT}"
-    environment:
-      API_PORT: ${API_PORT}
+  # api-proc:
+  #   container_name: api-proc
+  #   build: docker/images/python
+  #   volumes:
+  #     - ./src/api/proc:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   ports:
+  #     - "${EXT_PORT_API_PROC}:${API_PORT}"
+  #   environment:
+  #     API_PORT: ${API_PORT}
 
   # Container that runs the API for graphql
-  api-graphql:
-    container_name: api-graphql
-    build: docker/images/python
-    volumes:
-      - ./src/api/graphql:/usr/src/app
-      - ./docker/volumes/xml:/xml
-    ports:
-      - "${EXT_PORT_API_GRAPHQL}:${API_PORT}"
-    environment:
-      API_PORT: ${API_PORT}
+  # api-graphql:
+  #   container_name: api-graphql
+  #   build: docker/images/python
+  #   volumes:
+  #     - ./src/api/graphql:/usr/src/app
+  #     - ./docker/volumes/xml:/xml
+  #   ports:
+  #     - "${EXT_PORT_API_GRAPHQL}:${API_PORT}"
+  #   environment:
+  #     API_PORT: ${API_PORT}
 
   broker:
     container_name: rabbitmq

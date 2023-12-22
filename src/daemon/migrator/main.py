@@ -3,6 +3,7 @@ import time
 
 import psycopg2
 from psycopg2 import OperationalError
+from db_access import DBAccessMigrator
 
 POLLING_FREQ = int(sys.argv[1]) if len(sys.argv) >= 2 else 60
 
@@ -46,86 +47,53 @@ if __name__ == "__main__":
         if db_dst is None or db_org is None:
             continue
 
-        cursor_org = db_org.cursor()
-        cursor_dst = db_dst.cursor()
-
-        print("Checking updates...")        
-        # !TODO: 1- Execute a SELECT query to check for any changes on the table        
-        cursor_org.execute("SELECT * FROM imported_documents WHERE is_migrated = FALSE")
-        records_to_migrate = cursor_org.fetchall()
-        
-        for record in records_to_migrate:
-            # !TODO: 2- Execute a SELECT queries with xpath to retrieve the data we want to store in the relational db
-            # !TODO: 3- Execute INSERT queries in the destination db
-            # Car data
-            cursor_org.execute("""
-                SELECT unnest(xpath('/ElectricCars/Makers/Maker/@name', xml))::text[] as maker,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/@name', xml))::text[] as model,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@type', xml))::text[] as type,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@DOL', xml))::text[] as dol,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@VIN', xml))::text[] as vin,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@year', xml))::text[] as year,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@range', xml))::text[] as range,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@location_id', xml))::text[] as location_id,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@cafv_id', xml))::text[] as cafv_id,
-                unnest(xpath('/ElectricCars/Makers/Maker/Model/Car/@utility_id', xml))::text[] as utility_id
-                FROM imported_documents WHERE id = %s
-            """, (record[0],)) 
-            data = cursor_org.fetchall()
-            
-            for row in data:
-                cursor_dst.execute("""
-                    INSERT INTO Cars (maker, model, type, DOL, VIN, year, range, location_id, cafv_id, utility_id)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]))
-            
-            # Location data
-            cursor_org.execute("""
-                SELECT unnest(xpath('/ElectricCars/Locations/State/@name', xml))::text[] as state,
-                unnest(xpath('/ElectricCars/Locations/State/City/@name', xml))::text[] as city
-                FROM imported_documents WHERE id = %s
-            """, (record[0],))
-            data = cursor_org.fetchall()
-            
-            for row in data:
-                cursor_dst.execute("""
-                    INSERT INTO Locations (state, city)
-                    VALUES (%s, %s)
-                """, (row[0], row[1]))
-
-            # CAFV data
-            cursor_org.execute("""
-                SELECT unnest(xpath('/ElectricCars/CAFVEligibility/Eligibility/@name', xml))::text[] as name
-                FROM imported_documents WHERE id = %s
-            """, (record[0],))
-            data = cursor_org.fetchall()
-
-            for row in data:
-                cursor_dst.execute("""
-                    INSERT INTO CAFV (name)
-                    VALUES (%s)
-                """, (row[0],))       
-
-            # Utility data
-            cursor_org.execute("""
-                SELECT unnest(xpath('/ElectricCars/ElectricUtility/Utility/@name', xml))::text[] as name
-                FROM imported_documents WHERE id = %s
-            """, (record[0],))
-            data = cursor_org.fetchall()
-
-            for row in data:
-                cursor_dst.execute("""
-                    INSERT INTO Utility (name)
-                    VALUES (%s)
-                """, (row[0],))
+        db_access_migrator = DBAccessMigrator()
+        cars_data = []
+        locations_data = []
+        cafvs_data = []
+        utilities_data = []
                 
-            # !TODO: 4- Make sure we store somehow in the origin database that certain records were already migrated.
-            #          Change the db structure if needed.
-            cursor_org.execute("""
-                UPDATE imported_documents
-                SET is_migrated = TRUE
-                WHERE id = %s
-            """, (record[0],))
+        print("Checking updates...")
+              
+        # !TODO: 1- Execute a SELECT query to check for any changes on the table     
+        cursor_org = db_org.cursor()
+        cursor_org.execute("SELECT id FROM imported_documents WHERE is_migrated = 'f' ORDER BY id DESC LIMIT 1")
+        result = cursor_org.fetchone()
+        document_id = result[0]
+        print("Last document to migrate: ", result[0])  
+        print("Fetching cars data...")
+        cars_data = db_access_migrator.cars_to_store(document_id)
+        print("Cars data fetched.")
+        print("Fetching locations data...")
+        locations_data = db_access_migrator.locations_to_store(document_id)
+        cafvs_data = db_access_migrator.cafv_to_store(document_id)
+        utilities_data = db_access_migrator.utility_to_store(document_id)
+
+         
+        # !TODO: 2- Execute a SELECT queries with xpath to retrieve the data we want to store in the relational db
+        print("Cars to store:")
+        for car in cars_data:
+            print("Maker:", car[0], "Model:", car[1], "Type:", car[2], "DOL:", car[3], "VIN:", car[4], "Year:", car[5], "Range:", car[6], "Location ID:", car[7], "CAFV ID:", car[8], "Utility ID:", car[9])
+
+        print("Locations data to store:")
+        for location in locations_data:
+            print("Id:", location[0], "Name:", location[1], "Lat:", location[2], "Lon:", location[3])
+
+        print("CAFVs to store:")
+        for cafv in cafvs_data:
+            print("Year:", cafv[0], "City:", cafv[1])
+            
+        print("Utilities to store:")
+        for utility in utilities_data:
+            print("Year:", utility[0], "City:", utility[1])
+            
+        # !TODO: 3- Execute INSERT queries in the destination db
+        db_access_migrator.insert_cars(cars_data)
+        
+        # !TODO: 4- Make sure we store somehow in the origin database that certain records were already migrated.
+        #          Change the db structure if needed.
+        cursor_org = db_dst.cursor()
+        cursor_org.execute(f"UPDATE imported_documents SET is_migrated = TRUE WHERE id = {document_id}")
         
         db_org.close()
         db_dst.close()
