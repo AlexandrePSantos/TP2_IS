@@ -1,7 +1,6 @@
 import sys
 import psycopg2
 from flask import Flask, request, make_response, request, jsonify
-from flask_cors import CORS
 
 PORT = int(sys.argv[1]) if len(sys.argv) >= 2 else 9000
 

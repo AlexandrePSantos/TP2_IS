@@ -102,10 +102,8 @@ class CSVtoXMLConverter:
         
         return root_el
 
-    def to_xml_str(self):
-        xml_str = ET.tostring(
-            self.to_xml(), encoding='utf8', method='xml').decode()
-        dom = md.parseString(xml_str)  
-        with open("/data/result.xml", "w") as f:
-            f.write(dom.toprettyxml())      
+    def to_xml_str(self):            
+        xml_str = ET.tostring(self.to_xml(), encoding='utf8', method='xml').decode()
+        dom = md.parseString(xml_str)
+        return dom.toprettyxml()
     

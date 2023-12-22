@@ -89,9 +89,9 @@ if __name__ == "__main__":
             
             for row in data:
                 cursor_dst.execute("""
-                    INSERT INTO Locations (state, city, geom)
-                    VALUES (%s, %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326))
-                """, (row[0], row[1], row[2], row[3]))
+                    INSERT INTO Locations (state, city)
+                    VALUES (%s, %s)
+                """, (row[0], row[1]))
 
             # CAFV data
             cursor_org.execute("""

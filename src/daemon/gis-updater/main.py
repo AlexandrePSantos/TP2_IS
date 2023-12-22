@@ -33,7 +33,7 @@ if __name__ == "__main__":
         for id, city, state in countries:
             coordinates = get_data(city, state)
 
-            cur.execute(f"UPDATE countries SET geom = ST_SetSRID(ST_MakePoint({coordinates[1]}, {coordinates[0]}), 4326) WHERE id = {id}")
+            cur.execute(f"UPDATE Locations SET geom = ST_SetSRID(ST_MakePoint({coordinates[1]}, {coordinates[0]}), 4326) WHERE id = {id}")
 
         
         # !TODO: 3- Submit the changes
