@@ -35,13 +35,6 @@ CREATE TABLE public.CAFV (
     updated_on      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE public.Eligibility (
-    id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name			VARCHAR(250) NOT NULL,
-    created_on      TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_on      TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
 CREATE TABLE public.Utility (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name 	   		VARCHAR(250) NOT NULL,
@@ -57,11 +50,6 @@ ALTER TABLE Cars
 ALTER TABLE Cars
     ADD CONSTRAINT Cars_CAFV_id_fk
         FOREIGN KEY (cafv_id) REFERENCES CAFV
-            ON DELETE SET NULL;
-
-ALTER TABLE Cars
-    ADD CONSTRAINT Cars_Eligibility_id_fk
-        FOREIGN KEY (eligibility_id) REFERENCES Eligibility
             ON DELETE SET NULL;
 
 ALTER TABLE Cars
