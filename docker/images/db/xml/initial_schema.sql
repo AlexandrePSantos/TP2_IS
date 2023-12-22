@@ -5,6 +5,7 @@ CREATE TABLE public.imported_documents (
 	created_on      TIMESTAMP NOT NULL DEFAULT NOW(),
 	updated_on      TIMESTAMP NOT NULL DEFAULT NOW(),
 	is_deleted		BOOLEAN NOT NULL DEFAULT FALSE,
+	is_migration	BOOLEAN NOT NULL DEFAULT FALSE,
     deleted_on      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

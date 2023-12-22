@@ -46,9 +46,12 @@ if __name__ == "__main__":
         if db_dst is None or db_org is None:
             continue
 
-        print("Checking updates...")
-        # !TODO: 1- Execute a SELECT query to check for any changes on the table
         cursor_org = db_dst.cursor()
+
+        print("Checking updates...")
+        # !TODO: 1- Execute a SELECT query to check for any changes on the table        
+        cursor_org.execute("SELECT * FROM imported_documents WHERE is_migrated = FALSE")
+        records_to_migrate = cursor_org.fetchall()
 
         # !TODO: 2- Execute a SELECT queries with xpath to retrieve the data we want to store in the relational db
         print("Cars to store in the relational db:")
@@ -63,7 +66,7 @@ if __name__ == "__main__":
         
         # !TODO: 4- Make sure we store somehow in the origin database that certain records were already migrated.
         #          Change the db structure if needed.
-
+        
         db_org.close()
         db_dst.close()
 
