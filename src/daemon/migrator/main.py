@@ -60,40 +60,24 @@ if __name__ == "__main__":
         cursor_org.execute("SELECT id FROM imported_documents WHERE is_migrated = 'f' ORDER BY id DESC LIMIT 1")
         result = cursor_org.fetchone()
         document_id = result[0]
-        print("Last document to migrate: ", result[0])  
-        print("Fetching cars data...")
+         
+        # !TODO: 2- Execute a SELECT queries with xpath to retrieve the data we want to store in the relational db
         cars_data = db_access_migrator.cars_to_store(document_id)
-        print("Cars data fetched.")
-        print("Fetching locations data...")
         locations_data = db_access_migrator.locations_to_store(document_id)
         cafvs_data = db_access_migrator.cafv_to_store(document_id)
         utilities_data = db_access_migrator.utility_to_store(document_id)
-
-         
-        # !TODO: 2- Execute a SELECT queries with xpath to retrieve the data we want to store in the relational db
-        print("Cars to store:")
-        for car in cars_data:
-            print("Maker:", car[0], "Model:", car[1], "Type:", car[2], "DOL:", car[3], "VIN:", car[4], "Year:", car[5], "Range:", car[6], "Location ID:", car[7], "CAFV ID:", car[8], "Utility ID:", car[9])
-
-        print("Locations data to store:")
-        for location in locations_data:
-            print("Id:", location[0], "Name:", location[1], "Lat:", location[2], "Lon:", location[3])
-
-        print("CAFVs to store:")
-        for cafv in cafvs_data:
-            print("Year:", cafv[0], "City:", cafv[1])
-            
-        print("Utilities to store:")
-        for utility in utilities_data:
-            print("Year:", utility[0], "City:", utility[1])
             
         # !TODO: 3- Execute INSERT queries in the destination db
-        db_access_migrator.insert_cars(cars_data)
+        db_access_migrator.insert_locations(locations_data)
+        db_access_migrator.insert_cafv(cafvs_data)
+        db_access_migrator.insert_utility(utilities_data)
+        db_access_migrator.insert_cars(cars_data) 
         
         # !TODO: 4- Make sure we store somehow in the origin database that certain records were already migrated.
         #          Change the db structure if needed.
-        cursor_org = db_dst.cursor()
+        cursor_org = db_org.cursor()
         cursor_org.execute(f"UPDATE imported_documents SET is_migrated = TRUE WHERE id = {document_id}")
+        db_org.commit()
         
         db_org.close()
         db_dst.close()

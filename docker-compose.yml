@@ -10,11 +10,6 @@ services:
       - xml-data:/var/lib/postgresql/shared-data/
     ports:
       - "${EXP_PORT_PG_XML}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U is"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Database to store Relational data
   db-rel:
@@ -24,11 +19,6 @@ services:
       - rel-data:/var/lib/postgresql/shared-data/
     ports:
       - "${EXP_PORT_PG_REL}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U is"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Container that automatically converts CSV to XML and then imports the XML to db-xml
   importer:
@@ -55,10 +45,8 @@ services:
       USE_DEV_MODE: ${USE_DEV_MODE}
       POLLING_FREQ: ${POLLING_FREQ}
     depends_on:
-      db-xml:
-        condition: service_healthy
-      db-rel:
-        condition: service_healthy
+      - db-xml
+      - db-rel
         
   # Container that automatically migrates data from db-xml to db-rel
   # gis-updater:

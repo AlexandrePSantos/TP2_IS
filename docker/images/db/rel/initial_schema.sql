@@ -13,7 +13,6 @@ CREATE TABLE public.Cars (
     range           INT,
     location_id     uuid NOT NULL,
     cafv_id         uuid,
-    eligibility_id  uuid,
     utility_id      uuid,
     created_on      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_on      TIMESTAMP NOT NULL DEFAULT NOW()
@@ -21,6 +20,7 @@ CREATE TABLE public.Cars (
 
 CREATE TABLE public.Locations (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    xml_id          VARCHAR(250) NOT NULL,
     state           VARCHAR(250) NOT NULL,
     city            VARCHAR(250) NOT NULL,
 	geom			GEOMETRY,
@@ -30,6 +30,7 @@ CREATE TABLE public.Locations (
 
 CREATE TABLE public.CAFV (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    xml_id          VARCHAR(250) NOT NULL,
     name 	   		VARCHAR(250) NOT NULL,
     created_on      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_on      TIMESTAMP NOT NULL DEFAULT NOW()
@@ -37,6 +38,7 @@ CREATE TABLE public.CAFV (
 
 CREATE TABLE public.Utility (
     id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    xml_id          VARCHAR(250) NOT NULL,
     name 	   		VARCHAR(250) NOT NULL,
     created_on      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_on      TIMESTAMP NOT NULL DEFAULT NOW()
