@@ -7,9 +7,7 @@ import {Marker, Popup} from 'react-leaflet';
 import {icon as leafletIcon, point} from "leaflet";
 
 const LIST_PROPERTIES = [
-    {"key": "country", label: "Country", Icon: FlagIcon},
-    {"key": "number", label: "Shirt Number", Icon: ContactsIcon},
-    {"key": "position", label: "Position", Icon: PictureInPictureAltIcon}
+    {"key": "city", label: "City", Icon: FlagIcon},
 ];
 
 export function ObjectMarker({geoJSON}) {
