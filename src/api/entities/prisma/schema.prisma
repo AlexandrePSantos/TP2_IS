@@ -10,6 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// DEMO 
 model Teacher {
   name       String   @id
   city       String
@@ -19,3 +20,63 @@ model Teacher {
   @@map("teachers")
 }
 
+// Dataset
+model Car {
+  id          String   @id @default(uuid())
+  maker       String
+  model       String
+  type        String
+  DOL         Int?
+  VIN         String?
+  year        Int?
+  range       Int?
+  locationId  String   @map("location_id")
+  cafvId      String?  @map("cafv_id")
+  utilityId   String?  @map("utility_id")
+  createdOn   DateTime @default(now()) @map("created_on")
+  updatedOn   DateTime @updatedAt @map("updated_on")
+
+  location    Location @relation(fields: [locationId], references: [id])
+  cafv        CAFV?    @relation(fields: [cafvId], references: [id])
+  utility     Utility? @relation(fields: [utilityId], references: [id])
+
+  @@map("Cars")
+}
+
+model Location {
+  id         String   @id @default(uuid())
+  xmlId      String   @map("xml_id")
+  state      String
+  city       String
+  geom       String?
+  createdOn  DateTime @default(now()) @map("created_on")
+  updatedOn  DateTime @updatedAt @map("updated_on")
+
+  cars       Car[]
+
+  @@map("Locations")
+}
+
+model CAFV {
+  id         String   @id @default(uuid())
+  xmlId      String   @map("xml_id")
+  name       String
+  createdOn  DateTime @default(now()) @map("created_on")
+  updatedOn  DateTime @updatedAt @map("updated_on")
+
+  cars       Car[]
+
+  @@map("CAfv")
+}
+
+model Utility {
+  id         String   @id @default(uuid())
+  xmlId      String   @map("xml_id")
+  name       String
+  createdOn  DateTime @default(now()) @map("created_on")
+  updatedOn  DateTime @updatedAt @map("updated_on")
+
+  cars       Car[]
+
+  @@map("Utility")
+}

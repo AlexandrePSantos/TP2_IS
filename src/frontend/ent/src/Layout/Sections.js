@@ -1,25 +1,36 @@
-import Players from "../Tables/Players";
+// import Players from "../Tables/Players";
+// import Cars from "../Tables/Cars"; // Import Cars component
+// import Locations from "../Tables/Locations"; // Import Locations component
+import CAFV from "../Tables/CAFV"; // Import CAFV component
+import Utilities from "../Tables/Utilities"; // Import Utilities component
 
 const Sections = [
 
+    // {
+    //     id: "players",
+    //     label: "Players",
+    //     content: <Players/>
+    // },
+    // {
+    //     id: "cars", 
+    //     label: "Cars",
+    //     content: <Cars/>
+    // },
+    // {
+    //     id: "locations",
+    //     label: "Locations",
+    //     content: <Locations/> 
+    // },
     {
-        id: "players",
-        label: "Players",
-        content: <Players/>
+        id: "cafv", 
+        label: "CAFV",
+        content: <CAFV/> 
     },
-
     {
-        id: "teams",
-        label: "Teams",
-        content: <h1>Teams - Work in progresss</h1>
-    },
-
-    {
-        id: "countries",
-        label: "Countries",
-        content: <h1>Countries - Work in progress</h1>
+        id: "utilities",
+        label: "Utilities",
+        content: <Utilities/> 
     }
-
 ];
 
 export default Sections;

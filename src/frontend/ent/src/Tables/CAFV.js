@@ -11,7 +11,7 @@ import {
     TableRow
 } from "@mui/material";
 
-function Utilities() {
+function CAFV() {
 
     const PAGE_SIZE = 10;
     const [page, setPage] = useState(1);
@@ -20,8 +20,8 @@ function Utilities() {
 
     useEffect(() => {
         setData(null);
-        console.log(page);
-        fetch(`http://localhost:20001/api/utilities?page=${page}&page_size=${PAGE_SIZE}`)
+        console.log(`Fetching data for page ${page}`);
+        fetch(`http://localhost:20001/api/cafv?page=${page}&page_size=${PAGE_SIZE}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(response.statusText);
@@ -29,28 +29,31 @@ function Utilities() {
                 return response.json();
             })
             .then(responseData => {
-                console.log("%%%%$$$%$%$%#$%#$%#$%#$%#$%# Data before");
-                console.log(responseData);
-                console.log(responseData[0][0]['data']);
+                console.log("Data received from the server:", responseData);
+                console.log("Data before:", responseData[0][0]['data']);
                 setData(responseData[0][0]['data']);
                 setPagesSize(responseData[0][0]['number_of_records']);
-                console.log("%%%%$$$%$%$%#$%#$%#$%#$%#$%# Data after");
             })
             .catch(error => {
-                console.error(error);
+                console.error("Error fetching data:", error);
             });
     }, [page]);
+    
+    // Log the updated state after each re-render
+    useEffect(() => {
+        console.log("Data after:", data);
+    }, [data]);
 
     return (
         <>
-            <h1>Utilities</h1>
+            <h1>CAFV</h1>
 
             <TableContainer component={Paper}>
                 <Table sx={{minWidth: 650}} aria-label="simple table">
                     <TableHead>
                         <TableRow>
                             <TableCell component="th" width={"1px"} align="center">ID</TableCell>
-                            <TableCell align="center">Utilities</TableCell>
+                            <TableCell align="center">CAFV</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -93,4 +96,4 @@ function Utilities() {
     );
 }
 
-export default Utilities;
+export default CAFV;
