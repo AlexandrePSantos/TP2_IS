@@ -72,6 +72,7 @@ if __name__ == "__main__":
         db_access_migrator.insert_cafv(cafvs_data)
         db_access_migrator.insert_utility(utilities_data)
         db_access_migrator.insert_cars(cars_data) 
+        print("Inserts done!")
         
         # !TODO: 4- Make sure we store somehow in the origin database that certain records were already migrated.
         #          Change the db structure if needed.
