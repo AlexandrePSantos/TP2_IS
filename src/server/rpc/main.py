@@ -3,6 +3,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.server import SimpleXMLRPCRequestHandler
 
 from functions.db_functions import import_xml, soft_delete_doc, list_undeleted_docs
+from functions.db_functions import get_tesla, get_cars2022, get_100km, get_elegible, get_phev, get_seattle
 
 
 PORT = int(sys.argv[1]) if len(sys.argv) >= 2 else 9000
@@ -32,9 +33,22 @@ if __name__ == "__main__":
         server.register_function(soft_delete_doc)
         server.register_function(list_undeleted_docs)
         
-        # TODO - Query functions registration
-        # server.register_function(releases_from_car_by_id)
-
+        # Query functions registration
+        server.register_function(get_tesla)
+        server.register_function(get_cars2022)
+        server.register_function(get_100km)
+        server.register_function(get_elegible)
+        server.register_function(get_phev)
+        server.register_function(get_seattle)
+        
+        
+        # Test the get_tesla function
+        print("Testing the function...")
+        result = get_tesla()
+        print(result)
+        
+        
+        
         # start the server
         print(f"Starting the RPC Server in port {PORT}...")
         server.serve_forever()

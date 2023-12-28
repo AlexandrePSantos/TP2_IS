@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<ElectricCars>
+	<Makers>
+		<Maker id="1" name="HYUNDAI">
+			<Model id="1" name="KONA" type="Battery Electric Vehicle (BEV)">
+				<Car id="1" DOL="249675142" VIN="KM8K33AGXL" year="2020" range="258" cafv_ref="1" utility_ref="1" city_ref="1"/>
+            </Model>
+        </Maker>
+	</Makers>
+	<Locations>
+		<State id="1" name="WA">
+			<City id="1" name="Seattle"/>
+		</State>	
+	</Locations>
+	<CAFVEligibility>
+		<Eligibility id="1" name="Clean Alternative Fuel Vehicle Eligible"/>
+	</CAFVEligibility>
+	<ElectricUtility>
+		<Utility id="1" name="CITY OF SEATTLE - (WA)|CITY OF TACOMA - (WA)"/>
+	</ElectricUtility>
+</ElectricCars>

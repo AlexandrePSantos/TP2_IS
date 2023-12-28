@@ -22,6 +22,7 @@ RUN python -m pip install --upgrade pip
 # dependencies
 COPY ./requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install lxml
 
 # run the script
 CMD (sed -i 's/\r$//' ./run.sh) && (chmod +x ./run.sh) && (./run.sh)
