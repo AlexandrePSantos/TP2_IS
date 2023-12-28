@@ -38,7 +38,13 @@ def fetch_and_parse_xml():
     connection.close()
     return etree.fromstring(xml_data)
 
-# Query functions (Using XPATH)
+root = fetch_and_parse_xml()
+
+# Create dictionaries for Eligibility, Utility, and City elements
+eligibility_dict = {el.get('id'): el.get('name') for el in root.xpath('//CAFVEligibility/Eligibility')}
+utility_dict = {ut.get('id'): ut.get('name') for ut in root.xpath('//ElectricUtility/Utility')}
+city_dict = {city.get('id'): city.get('name') for city in root.xpath('//Locations//City')}
+
 def create_car_dict(car, exclude=None):
     model = car.getparent()
     car_dict = {
@@ -50,15 +56,13 @@ def create_car_dict(car, exclude=None):
         "VIN": car.get("VIN"),
         "year": car.get("year"),
         "range": car.get("range"),
-        "cafv_ref": root.xpath(f"//CAFVEligibility/Eligibility[@id='{car.get('cafv_ref')}']")[0].get("name"),
-        "utility_ref": root.xpath(f"//ElectricUtility/Utility[@id='{car.get('utility_ref')}']")[0].get("name"),
-        "city_ref": root.xpath(f"//Locations//City[@id='{car.get('city_ref')}']")[0].get("name"),
+        "cafv_ref": eligibility_dict[car.get('cafv_ref')],
+        "utility_ref": utility_dict[car.get('utility_ref')],
+        "city_ref": city_dict[car.get('city_ref')],
     }
     if exclude and exclude in car_dict:
         del car_dict[exclude]
     return car_dict
-
-root = fetch_and_parse_xml()
     
 # Query 1 - Get all cars from TESLA
 def get_tesla():

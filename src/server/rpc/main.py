@@ -41,12 +41,10 @@ if __name__ == "__main__":
         server.register_function(get_phev)
         server.register_function(get_seattle)
         
-        
         # Test the get_tesla function
-        print("Testing the function...")
-        result = get_tesla()
-        print(result)
-        
+        # # # print("Testing the function...")
+        # # # result = get_tesla()
+        # # # print(result)
         
         
         # start the server
