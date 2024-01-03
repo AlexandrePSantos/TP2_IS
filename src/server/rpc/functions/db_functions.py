@@ -64,32 +64,32 @@ def create_car_dict(car, exclude=None):
         del car_dict[exclude]
     return car_dict
     
-# Query 1 - Get all cars from TESLA
-def get_tesla():
-    cars = root.xpath("//Maker[@name='TESLA']/Model/Car")
+# Query 0 - Get all makers
+def get_all_makers():
+    makers = root.xpath("//Maker")
+    return [maker.get("name") for maker in makers]
+
+# Query 1 - Get all cars from maker
+def get_maker(maker):
+    cars = root.xpath(f"//Maker[@name='{maker}']/Model/Car")
     return [create_car_dict(car, exclude="maker") for car in cars]
 
 # Query 2 - Get all cars from from 2022
-def get_cars2022():
-    cars = root.xpath("//Car[@year='2022']")
+def get_year(year):
+    cars = root.xpath(f"//Car[@year='{year}']")
     return [create_car_dict(car, exclude="year") for car in cars]
 
-# Query 3 - Get all cars with a range higer then 100
-def get_100km():
-    cars = root.xpath("//Car[@range>'100']")
-    return [create_car_dict(car, exclude="range") for car in cars]
-
 # Query 4 - Get all cars with cafv "Clean Alternative Fuel Vehicle Eligible"
-def get_elegible():
-    cars = root.xpath("//Car[@cafv_ref='1']")
+def get_elegible(cafv):
+    cars = root.xpath(f"//Car[@cafv_ref='{cafv}']")
     return [create_car_dict(car, exclude="cafv") for car in cars]
 
 # Query 5 - Get all cars with model type "Plug-in Hybrid Electric Vehicle (PHEV)"
-def get_phev():
-    cars = root.xpath("//Model[@type='Plug-in Hybrid Electric Vehicle (PHEV)']/Car")
+def get_type(phev):
+    cars = root.xpath(f"//Model[@type='{phev}']/Car")
     return [create_car_dict(car, exclude="type") for car in cars]
 
 # Query 6 - Get all cars located in "Seattle"
-def get_seattle():
-    cars = root.xpath("//Car[@city_ref='1']")
+def get_city(city):
+    cars = root.xpath(f"//Car[@city_ref='{city}']")
     return [create_car_dict(car, exclude="city_ref") for car in cars]

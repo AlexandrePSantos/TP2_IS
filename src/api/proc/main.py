@@ -15,35 +15,43 @@ def query_server(method_name):
     result = getattr(server, method_name)()
     return jsonify(result)
 
-# Query 1 - Get all cars from TESLA
-@app.route('/api/tesla', methods=['GET'])
-def get_tesla():
-    return query_server('get_tesla')
+# Get all makers
+@app.route('/api/makers', methods=['GET'])
+def get_makers():
+    print("connecting to server...")
+    server = xmlrpc.client.ServerProxy("http://rpc-server:8080")
+    result = server.get_all_makers()
+    return jsonify(result)
 
-# Query 2 - Get all cars from from 2022
-@app.route('/api/2022', methods=['GET'])
-def get_cars2022():
-    return query_server('get_cars2022')
+# Query 1 - Get all cars from x
+@app.route('/api/maker', methods=['GET'])
+def get_maker():
+    maker = request.args.get('maker')
 
-# Query 3 - Get all cars with a range higer then 100  
-@app.route('/api/100km', methods=['GET'])
-def get_100km():
-    return query_server('get_100km')
+    print("connecting to server...")
+    server = xmlrpc.client.ServerProxy("http://rpc-server:8080")
+    result = server.get_maker(maker)
+    return jsonify(result)
 
-# Query 4 - Get all cars with cafv "Clean Alternative Fuel Vehicle Eligible"
+# Query 2 - Get all cars from x
+@app.route('/api/year', methods=['GET'])
+def get_year(year):
+    return query_server('get_year')
+
+# Query 3 - Get all cars with cafv x
 @app.route('/api/elegible', methods=['GET'])
 def get_elegible():
     return query_server('get_elegible')
 
-# Query 5 - Get all cars with model type "Plug-in Hybrid Electric Vehicle (PHEV)"
-@app.route('/api/phev', methods=['GET'])
-def get_phev():
-    return query_server('get_phev')
+# Query 4 - Get all cars with model type x 
+@app.route('/api/type', methods=['GET'])
+def get_type(phev):
+    return query_server('get_type')
 
-# Query 6 - Get all cars located in "Seattle"
-@app.route('/api/seattle', methods=['GET'])
-def get_seattle():
-    return query_server('get_seattle')
+# Query 5 - Get all cars located in x
+@app.route('/api/city', methods=['GET'])
+def get_city(city):
+    return query_server('get_city')
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=PORT)
