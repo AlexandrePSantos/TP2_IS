@@ -35,10 +35,12 @@ def callback(ch, method, properties, body):
     print(f"Received message: {message}")
 
     if message == "Activate":
-        print(f"Getting up to {ENTITIES_PER_ITERATION} entities without coordinates...")
+        # print(f"Getting up to {ENTITIES_PER_ITERATION} entities without coordinates...") // comentado por razoes de teste
+        print(f"Getting all entities without coordinates...")
         connection = psycopg2.connect(user="is", password="is", host="db-rel", database="is")
         cur = connection.cursor()
-        cur.execute(f"SELECT id, city, state FROM Locations WHERE geom IS NULL LIMIT {ENTITIES_PER_ITERATION}")
+        # cur.execute(f"SELECT id, city, state FROM Locations WHERE geom IS NULL LIMIT {ENTITIES_PER_ITERATION}") // comentado por razoes de teste
+        cur.execute(f"SELECT id, city, state FROM Locations WHERE geom IS NULL")
         countries = cur.fetchall()
 
         for id, city, state in countries:
@@ -46,6 +48,8 @@ def callback(ch, method, properties, body):
             if coordinates is not None:
                 cur.execute(f"UPDATE Locations SET geom = ST_SetSRID(ST_MakePoint({coordinates[1]}, {coordinates[0]}), 4326) WHERE id = '{id}'")
                 connection.commit()
+                
+        print("Finished updating coordinates")
 
         cur.close()
         connection.close()
