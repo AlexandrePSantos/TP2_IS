@@ -27,6 +27,7 @@ type ImportedDocument struct {
 type Task struct {
     Type   string
     Entity ImportedDocument
+    Body   string
 }
 
 func sendDocumentShouldMigrateMessage(documentId string, queue amqp.Queue, channel *amqp.Channel) {
@@ -93,6 +94,7 @@ func (doc *ImportedDocument) Print() {
 
 func GenerateTasks(docs []ImportedDocument) []Task {
     var tasks []Task
+    var updateTasks []Task
 
     maxRetries := 5
     retryDelay := time.Second * 5
@@ -126,46 +128,104 @@ func GenerateTasks(docs []ImportedDocument) []Task {
     }
     defer ch.Close()
 
-    q, err := ch.QueueDeclare(
-        "task_queue", // name
-        true,         // durable
-        false,        // delete when unused
-        false,        // exclusive
-        false,        // no-wait
-        nil,          // arguments
+    // Declare the migrator queue
+    migratorQueue, err := ch.QueueDeclare(
+        "migrator_queue", // name
+        true,             // durable
+        false,            // delete when unused
+        false,            // exclusive
+        false,            // no-wait
+        nil,              // arguments
     )
     if err != nil {
-        log.Fatalf("Failed to declare a queue: %s", err)
+        log.Fatalf("Failed to declare the migrator queue: %s", err)
+    }
+
+    // Declare the gis-updater queue
+    gisUpdaterQueue, err := ch.QueueDeclare(
+        "gis_updater_queue", // name
+        true,                // durable
+        false,               // delete when unused
+        false,               // exclusive
+        false,               // no-wait
+        nil,                 // arguments
+    )
+    if err != nil {
+        log.Fatalf("Failed to declare the gis-updater queue: %s", err)
     }
 
     for _, doc := range docs {
-        body := fmt.Sprintf("File ID: %d", doc.Id)
+        var queueName string
+        var body string
+
+        if doc.Is_migrated {
+            queueName = gisUpdaterQueue.Name
+            body = "Activate"
+        } else {
+            queueName = migratorQueue.Name
+            body = fmt.Sprintf("File ID: %d", doc.Id)
+        }
+
+        task := Task{
+            Type:   queueName,
+            Entity: doc,
+            Body:   body,
+        }
+
+        if doc.Is_migrated {
+            tasks = append(tasks, task)
+        } else {
+            updateTasks = append(updateTasks, task)
+        }
+    }
+
+    // Publish migration tasks
+    for _, task := range tasks {
         err = ch.Publish(
-            "",     // exchange
-            q.Name, // routing key
-            false,  // mandatory
-            false,  // immediate
+            "",        // exchange
+            task.Type, // routing key
+            false,     // mandatory
+            false,     // immediate
             amqp.Publishing{
                 ContentType: "text/plain",
-                Body:        []byte(body),
+                Body:        []byte(task.Body),
             })
         if err != nil {
             log.Fatalf("Failed to publish a message: %s", err)
         }
     }
 
-    return tasks
+    // Publish update tasks
+    for _, task := range updateTasks {
+        err = ch.Publish(
+            "",        // exchange
+            task.Type, // routing key
+            false,     // mandatory
+            false,     // immediate
+            amqp.Publishing{
+                ContentType: "text/plain",
+                Body:        []byte(task.Body),
+            })
+        if err != nil {
+            log.Fatalf("Failed to publish a message: %s", err)
+        }
+    }
+
+    return append(tasks, updateTasks...)
 }
 
 func ProcessTasks(tasks []Task) {
     for _, task := range tasks {
         switch task.Type {
-        case "import":
-            fmt.Println("Importing document:", task.Entity.Filename)
-        case "update":
-            fmt.Println("Updating document:", task.Entity.Filename)
-        case "update_geo":
-            fmt.Println("Updating geographic data:", task.Entity.Filename)
+        case "migrator_queue":
+            fmt.Println("Migrating document:", task.Entity.Filename)
+        case "gis_updater_queue":
+            if task.Entity.Is_migrated {
+                fmt.Println("Updating geographic data:", task.Entity.Filename)
+            } else {
+                fmt.Println("Skipping geographic data update task for not migrated document:", task.Entity.Filename)
+                // No need to put the task back in the queue as it will be requeued in the next iteration
+            }
         }
     }
 }
