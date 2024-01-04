@@ -44,9 +44,14 @@ services:
     environment:
       USE_DEV_MODE: ${USE_DEV_MODE}
       POLLING_FREQ: ${POLLING_FREQ}
+      ENTITIES_PER_ITERATION: ${ENTITIES_PER_ITERATION}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
     depends_on:
       - db-xml
       - db-rel
+      - broker
         
   # Container that automatically migrates data from db-xml to db-rel
   gis-updater:
@@ -178,6 +183,22 @@ services:
       - "${EXT_PORT_API_GRAPHQL}:${API_PORT}"
     environment:
       API_PORT: ${API_PORT}
+
+  watcher:
+    container_name: watcher
+    build: docker/images/golang
+    volumes:
+      - ./src/daemon/watcher:/usr/src/app
+      - ./docker/volumes/xml:/xml
+    environment:
+      USE_DEV_MODE: ${USE_DEV_MODE}
+      POLLING_FREQ: ${POLLING_FREQ}
+      ENTITIES_PER_ITERATION: ${ENTITIES_PER_ITERATION}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
+    depends_on:
+      - broker
 
   broker:
     container_name: rabbitmq

@@ -30,14 +30,16 @@ class CSVHandler(FileSystemEventHandler):
 
         # generate file creation events for existing files
         for file in [os.path.join(dp, f) for dp, dn, filenames in os.walk(input_path) for f in filenames]:
-            event = FileCreatedEvent(os.path.join(CSV_INPUT_PATH, file))
-            event.event_type = "created"
-            self.dispatch(event)
+            if file not in asyncio.run(self.get_converted_files()):
+                event = FileCreatedEvent(os.path.join(CSV_INPUT_PATH, file))
+                event.event_type = "created"
+                self.dispatch(event)
 
     async def convert_csv(self, csv_path):
         # here we avoid converting the same file again
         # !TODO: check converted files in the database
         if csv_path in await self.get_converted_files():
+            print(f"File '{csv_path}' has already been converted. Skipping.")
             return
 
         print(f"new file to convert: '{csv_path}'")
@@ -72,13 +74,19 @@ class CSVHandler(FileSystemEventHandler):
         db_access = DBAccess()
         files = db_access.get_converted_files()
 
-        for file in files:
+        for file_tuple in files:
+            file = file_tuple[0]  # extract the file path from the tuple
             csv_files.append(file)
         return csv_files
 
     def on_created(self, event):
         if not event.is_directory and event.src_path.endswith(".csv"):
-            asyncio.run(self.convert_csv(event.src_path))
+            time.sleep(1)  # wait for 1 second before processing the file
+            converted_files = asyncio.run(self.get_converted_files())
+            if event.src_path not in converted_files:
+                asyncio.run(self.convert_csv(event.src_path))
+            else:
+                print(f"File '{event.src_path}' has already been converted. Skipping.")
 
 
 if __name__ == "__main__":

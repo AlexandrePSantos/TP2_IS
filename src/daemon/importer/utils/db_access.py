@@ -1,11 +1,21 @@
+import time
+from psycopg2 import OperationalError
 import psycopg2
 
 class DBAccess:
     def connect_connection(self):
-        connection = psycopg2.connect(user="is",
-                                      password="is",
-                                      host="db-xml",
-                                      database="is")
+        connection = None
+        while connection is None:
+            try:
+                connection = psycopg2.connect(user="is",
+                                              password="is",
+                                              host="db-xml",
+                                              database="is")
+                print("Connection to PostgreSQL DB successful")
+            except OperationalError as e:
+                print(f"The error '{e}' occurred")
+                print("PostgreSQL not ready yet, waiting for a while...")
+                time.sleep(5)
         return connection
 
     def connect_cursor(self, connection):

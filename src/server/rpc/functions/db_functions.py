@@ -1,11 +1,17 @@
+import time
 import psycopg2
-from psycopg2 import sql
+from psycopg2 import OperationalError
 from lxml import etree
 
 # Database connection
 def connect_db():
-    connection = psycopg2.connect(user="is", password="is", host="db-xml", database="is")
-    return connection, connection.cursor()
+    while True:
+        try:
+            connection = psycopg2.connect(user="is", password="is", host="db-xml", database="is")
+            return connection, connection.cursor()
+        except OperationalError:
+            print("Unable to connect to the database. Retrying in 5 seconds...")
+            time.sleep(5)
 
 # Execute SQL query
 def execute_sql(query, params=None):
@@ -32,11 +38,20 @@ def list_undeleted_docs():
     return execute_sql(f"select id, file_name from imported_documents where \"is_deleted\" = f").fetchall()
 
 def fetch_and_parse_xml():
-    connection, cursor = execute_sql("SELECT xml FROM imported_documents WHERE is_deleted = 'f' ORDER BY id DESC LIMIT 1")
-    xml_data = cursor.fetchone()[0]
-    cursor.close()
-    connection.close()
-    return etree.fromstring(xml_data)
+    while True:
+        connection, cursor = execute_sql("SELECT xml FROM imported_documents WHERE is_deleted = 'f' ORDER BY id DESC LIMIT 1")
+        row = cursor.fetchone()
+        if row is None:
+            print("No data found. Retrying in 5 seconds...")
+            cursor.close()
+            connection.close()
+            time.sleep(5)
+            continue
+
+        xml_data = row[0]
+        cursor.close()
+        connection.close()
+        return etree.fromstring(xml_data)
 
 root = fetch_and_parse_xml()
 
