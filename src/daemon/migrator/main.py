@@ -29,7 +29,7 @@ def print_psycopg2_exception(ex):
 
 def callback(ch, method, properties, body):
     document_id = int(body.decode().split(":")[1].strip())
-    # print(f"Received file id: {document_id}")
+    print(f"Received message with file id: {document_id}")
 
     # Connect to both databases
     db_org = psycopg2.connect(host='db-xml', database='is', user='is', password='is')

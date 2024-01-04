@@ -67,7 +67,7 @@ func ImportedDocuments() []ImportedDocument {
         panic("Connection is nil")
     }
 
-    documents, err := conn.Query("SELECT id, file_name, created_on, updated_on, deleted_on, is_migrated FROM imported_documents WHERE is_migrated = 'f';")
+    documents, err := conn.Query("SELECT id, file_name, created_on, updated_on, deleted_on, is_migrated FROM imported_documents;")
     if err != nil {
         log.Fatalf("Failed to query documents: %s", err)
     }
@@ -166,6 +166,8 @@ func GenerateTasks(docs []ImportedDocument) []Task {
             body = fmt.Sprintf("File ID: %d", doc.Id)
         }
 
+        log.Printf("Sending message: %s to queue: %s", body, queueName)
+
         task := Task{
             Type:   queueName,
             Entity: doc,
@@ -174,6 +176,8 @@ func GenerateTasks(docs []ImportedDocument) []Task {
 
         if doc.Is_migrated {
             tasks = append(tasks, task)
+            body = "Activate"
+            log.Printf("doc.Is_migrated is true for doc.Id: %d", doc.Id)
         } else {
             updateTasks = append(updateTasks, task)
         }
@@ -232,6 +236,7 @@ func ProcessTasks(tasks []Task) {
 
 func main() {
     sentIds := make(map[int]bool) // Keep track of sent IDs
+    migratedStatus := make(map[int]bool) // Keep track of migrated status
 
     for {
         docs := ImportedDocuments()
@@ -239,9 +244,11 @@ func main() {
         // Filter out documents that have already been sent
         var newDocs []ImportedDocument
         for _, doc := range docs {
-            if !sentIds[doc.Id] {
+            // If the document hasn't been sent yet, or its migrated status has changed
+            if !sentIds[doc.Id] || doc.Is_migrated != migratedStatus[doc.Id] {
                 newDocs = append(newDocs, doc)
                 sentIds[doc.Id] = true // Mark this ID as sent
+                migratedStatus[doc.Id] = doc.Is_migrated // Update the migrated status
             }
         }
 

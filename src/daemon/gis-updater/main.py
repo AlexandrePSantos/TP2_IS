@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 import psycopg2
 from pip._vendor import requests
@@ -29,27 +30,45 @@ def get_data(city, state):
         print(f"Error making request: {response.status_code}, {response.text}")
         return None
 
-if __name__ == "__main__":
+def callback(ch, method, properties, body):
+    message = body.decode()
+    print(f"Received message: {message}")
 
-    while True:
+    if message == "Activate":
         print(f"Getting up to {ENTITIES_PER_ITERATION} entities without coordinates...")
-        # !TODO: 1- Use api-gis to retrieve a fixed amount of entities without coordinates (e.g. 100 entities per iteration, use ENTITIES_PER_ITERATION)
         connection = psycopg2.connect(user="is", password="is", host="db-rel", database="is")
-
         cur = connection.cursor()
         cur.execute(f"SELECT id, city, state FROM Locations WHERE geom IS NULL LIMIT {ENTITIES_PER_ITERATION}")
         countries = cur.fetchall()
-        
-        # !TODO: 2- Use the entity information to retrieve coordinates from an external API
+
         for id, city, state in countries:
             coordinates = get_data(city, state)
-
-            cur.execute(f"UPDATE Locations SET geom = ST_SetSRID(ST_MakePoint({coordinates[1]}, {coordinates[0]}), 4326) WHERE id = '{id}'")
-
-        
-        # !TODO: 3- Submit the changes
-        connection.commit()
+            if coordinates is not None:
+                cur.execute(f"UPDATE Locations SET geom = ST_SetSRID(ST_MakePoint({coordinates[1]}, {coordinates[0]}), 4326) WHERE id = '{id}'")
+                connection.commit()
 
         cur.close()
         connection.close()
-        time.sleep(POLLING_FREQ)
+
+if __name__ == "__main__":
+    user = os.getenv('RABBITMQ_DEFAULT_USER')
+    password = os.getenv('RABBITMQ_DEFAULT_PASS')
+    vhost = os.getenv('RABBITMQ_DEFAULT_VHOST')
+    credentials = pika.PlainCredentials(user, password)
+          
+    while True:
+        try:
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host='broker', virtual_host=vhost, credentials=credentials))
+            channel = connection.channel()
+
+            channel.queue_declare(queue='gis_updater_queue', durable=True) 
+
+            channel.basic_consume(queue='gis_updater_queue', on_message_callback=callback, auto_ack=True)
+
+            print('Waiting for messages. To exit press CTRL+C')
+            channel.start_consuming()
+        except pika.exceptions.AMQPConnectionError:
+            print("Connection was closed, retrying...")
+            time.sleep(5)  # wait for 5 seconds before retrying
+            

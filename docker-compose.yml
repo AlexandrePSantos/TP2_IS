@@ -64,9 +64,13 @@ services:
       USE_DEV_MODE: ${USE_DEV_MODE}
       POLLING_FREQ: ${POLLING_FREQ}
       ENTITIES_PER_ITERATION: ${ENTITIES_PER_ITERATION}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
     depends_on:
       - api-gis
       - api-entities
+      - broker
 
   # Container that runs the RPC server
   rpc-server:
