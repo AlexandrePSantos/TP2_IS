@@ -1,8 +1,5 @@
 import {useEffect, useState} from "react";
-
-
 import {
-    CircularProgress,
     Pagination,
     Paper,
     Table,
@@ -13,38 +10,20 @@ import {
     TableRow
 } from "@mui/material";
 
-function Makers() {
-
+function AllCars() {
     const PAGE_SIZE = 10;
     const [page, setPage] = useState(1);
-    const [data, setData] = useState(null);
+    const [car, setCar] = useState([]);
 
-    const [pagesSize, setPagesSize] = useState(1);
-
+    /* Updates the data for the current bounds */
     useEffect(() => {
-        setData(null); 
-        console.log(page)
-        fetch(`http://localhost:20003/api/makers?page=${page}&page_size=${PAGE_SIZE}`)
-            .then(response => response.json())
-            .then(responseData => {
-                console.log("%%%%$$$%$%$%#$%#$%#$%#$%#$%# Data before")
-                console.log(responseData);
-                console.log(responseData[0][0]['data']); console.log(responseData[0][0]['data']);
-                setData(responseData[0][0]['data']); console.log(responseData);
-                setPagesSize(responseData[0][0]['number_of_records'])
-                console.log("%%%%$$$%$%$%#$%#$%#$%#$%#$%# Data after")
-                console.log(data);
-            }) //added this then
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
-                return response.json();
-            })
-            .catch(error => {
-                console.error(error);
-            });
-    }, [page]);
+        const url = `http://localhost:20003/api/makers?page=${page}&size=${PAGE_SIZE}`; 
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => setCar(data))
+            .catch(err => console.log(err))
+    }, [page])
 
     return (
         <>
@@ -57,28 +36,21 @@ function Makers() {
                             <TableCell>Maker</TableCell>
                         </TableRow>
                     </TableHead>
-                    <TableBody>
-                        {
-                            data ?
-                                data.map((row, index) => ( 
-                                    <TableRow key={row.id + '-' + index} style={{background: "gray", color: "black"}}>
-                                        <TableCell component="td" align="center">{row.id}</TableCell>
-                                        <TableCell component="td" scope="row">
-                                            {row.name}
-                                        </TableCell>
-                                    </TableRow>
-                                )):
-                                <TableRow>
-                                    <TableCell colSpan={3}>
-                                        <CircularProgress/>
-                                    </TableCell>
-                                </TableRow>
-                        }
+                    <TableBody>{
+                        car.map((row, index) => ( 
+                            <TableRow key={row.id + '-' + index} style={{background: "gray", color: "black"}}>
+                                <TableCell component="td" align="center">{row.id}</TableCell>
+                                <TableCell component="td" scope="row">
+                                    {row.name}
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    }
                     </TableBody>
                 </Table>
             </TableContainer>
             {
-                data && <div style={{background: "black", padding: "1rem"}}>
+                car.length > 0 && <div style={{background: "black", padding: "1rem"}}>
                     <Pagination style={{color: "black"}}
                                 variant="outlined" shape="rounded"
                                 color={"primary"}
@@ -86,7 +58,7 @@ function Makers() {
                                     setPage(v)
                                 }}
                                 page={page}
-                                count={Math.floor(pagesSize / PAGE_SIZE) }
+                                count={Math.ceil(car.length / PAGE_SIZE)}
                     />
                 </div>
             }
@@ -94,4 +66,4 @@ function Makers() {
     );
 }
 
-export default Makers;
+export default AllCars;

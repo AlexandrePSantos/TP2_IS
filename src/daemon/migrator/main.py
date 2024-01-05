@@ -31,10 +31,6 @@ def callback(ch, method, properties, body):
     document_id = int(body.decode().split(":")[1].strip())
     print(f"Received message with file id: {document_id}")
 
-    # Connect to both databases
-    db_org = psycopg2.connect(host='db-xml', database='is', user='is', password='is')
-    db_dst = psycopg2.connect(host='db-rel', database='is', user='is', password='is')
-
     db_access_migrator = DBAccessMigrator()
     cars_data = []
     locations_data = []
@@ -58,14 +54,10 @@ def callback(ch, method, properties, body):
     db_access_migrator.insert_cars(cars_data)
     print("Inserts done!")
 
-    # Make sure we store somehow in the origin database that certain records were already migrated.
-    # Change the db structure if needed.
-    cursor_org = db_org.cursor()
-    cursor_org.execute(f"UPDATE imported_documents SET is_migrated = TRUE WHERE id = {document_id}")
-    db_org.commit()
-
-    db_org.close()
-    db_dst.close()
+    # Update the is_migrated column for the document
+    db_access_migrator.updateIsMigrated(document_id)
+    print(f"Updated is_migrated for document {document_id}")
+        
 
 if __name__ == "__main__":
     user = os.getenv('RABBITMQ_DEFAULT_USER')

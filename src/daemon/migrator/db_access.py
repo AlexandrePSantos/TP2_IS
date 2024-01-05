@@ -20,6 +20,13 @@ class DBAccessMigrator:
         cursor = connection.cursor()
         return cursor
 
+    def updateIsMigrated(self, id):
+        connection = self.connect_connection_xml()
+        with connection.cursor() as cursor:
+            sql = "UPDATE imported_documents SET is_migrated = 't' WHERE id = %s"
+            cursor.execute(sql, (id,))
+        connection.commit()
+        
     # SELECTS
     # WORKING
     def cars_to_store(self, id):

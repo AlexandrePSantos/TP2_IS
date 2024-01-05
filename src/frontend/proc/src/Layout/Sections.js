@@ -1,4 +1,5 @@
 import TopTeams from "../Procedures/TopTeams";
+import AllCars from "../Procedures/AllCars";
 import MakerCars from "../Procedures/MakerCars";
 import YearCars from "../Procedures/YearCars";
 import ElegibleCars from "../Procedures/ElegibleCars";
@@ -11,6 +12,12 @@ const Sections = [
         id: "top-teams",
         label: "Top Teams",
         content: <TopTeams/>
+    },
+
+    {
+        id: "all-cars",
+        label: "All Cars",
+        content: <AllCars/>
     },
 
     {

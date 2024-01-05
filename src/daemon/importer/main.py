@@ -73,9 +73,11 @@ class CSVHandler(FileSystemEventHandler):
         # !TODO: you should retrieve from the database the files that were already converted before
         db_access = DBAccess()
         files = db_access.get_converted_files()
-
+        
         for file_tuple in files:
+            # print(f"____Converted files: ", file_tuple) # ('/csv/dataset.csv',)
             file = file_tuple[0]  # extract the file path from the tuple
+            # print(f"____Converted files: ", file) # /csv/dataset.csv
             csv_files.append(file)
         return csv_files
 
@@ -83,9 +85,10 @@ class CSVHandler(FileSystemEventHandler):
         if not event.is_directory and event.src_path.endswith(".csv"):
             time.sleep(1)  # wait for 1 second before processing the file
             converted_files = asyncio.run(self.get_converted_files())
+            print(f"_______Files to convert: ", event.src_path)
             if event.src_path not in converted_files:
                 asyncio.run(self.convert_csv(event.src_path))
-            else:
+            elif event.src_path in converted_files:
                 print(f"File '{event.src_path}' has already been converted. Skipping.")
 
 

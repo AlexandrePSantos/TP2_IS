@@ -41,7 +41,7 @@ def get_markers():
             }
         })
 
-    print(points)
+    # print(points)
 
     cur.close()
     connection.close()

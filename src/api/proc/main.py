@@ -21,6 +21,7 @@ def get_makers():
     print("connecting to server...")
     server = xmlrpc.client.ServerProxy("http://rpc-server:8080")
     result = server.get_all_makers()
+    print(f"API-PROC RESULT: ", result)
     return jsonify(result)
 
 # Query 1 - Get all cars from x
