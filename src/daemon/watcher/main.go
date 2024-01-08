@@ -13,7 +13,6 @@ import (
 
 const (
     CONNECTION_STR_XML = "user=is password=is dbname=is host=db-xml sslmode=disable"
-    CONNECTION_STR_REL = "user=is password=is dbname=is host=db-rel sslmode=disable"
 )
 
 type ImportedDocument struct {
@@ -93,38 +92,11 @@ func (doc *ImportedDocument) Print() {
     fmt.Printf("%d: %s\n", doc.Id, doc.Filename)
 }
 
-func checkEmptyGeom() bool {
-    conn, err := sql.Open("postgres", CONNECTION_STR_REL)
-    if err != nil {
-        log.Fatalf("Failed to connect to PostgreSQL: %s", err)
-    }
-
-    if conn.Ping() != nil {
-        panic("Can't ping")
-    }
-
-    if conn == nil {
-        panic("Connection is nil")
-    }
-
-    sql := "SELECT COUNT(*) FROM locations WHERE geom IS NULL OR ST_IsEmpty(geom)"
-    row := conn.QueryRow(sql)
-    var count int
-    err = row.Scan(&count)
-    if err != nil {
-        log.Fatalf("Failed to execute query: %s", err)
-    }
-
-    conn.Close()
-
-    return count > 0
-}
-
 func GenerateTasks(docs []ImportedDocument) []Task {
     var tasks []Task
     var updateTasks []Task
 
-    maxRetries := 15
+    maxRetries := 5
     retryDelay := time.Second * 5
 
     var conn *amqp.Connection
@@ -182,38 +154,32 @@ func GenerateTasks(docs []ImportedDocument) []Task {
         log.Fatalf("Failed to declare the gis-updater queue: %s", err)
     }
 
-    // Check if there are any empty rows in the geom column
-    if checkEmptyGeom() {
-        log.Printf("There are empty rows in the geom column. Not sending message to gis-updater.")
-    } else {
-        for _, doc := range docs {
-            var queueName string
-            var body string
+    for _, doc := range docs {
+        var queueName string
+        var body string
 
-            if doc.Is_migrated {
-                queueName = gisUpdaterQueue.Name
-                body = "Activate"
-            } else {
-                queueName = migratorQueue.Name
-                body = fmt.Sprintf("File ID: %d", doc.Id)
-            }
+        if doc.Is_migrated {
+            queueName = gisUpdaterQueue.Name
+            body = "Activate"
+        } else {
+            queueName = migratorQueue.Name
+            body = fmt.Sprintf("File ID: %d", doc.Id)
+        }
 
-            log.Printf("Sending message: %s to queue: %s", body, queueName)
+        log.Printf("Sending message: %s to queue: %s", body, queueName)
 
-            task := Task{
-                Type:   queueName,
-                Entity: doc,
-                Body:   body,
-            }
+        task := Task{
+            Type:   queueName,
+            Entity: doc,
+            Body:   body,
+        }
 
-            if doc.Is_migrated {
-                tasks = append(tasks, task)
-                body = "Activate"
-                log.Printf("doc.Is_migrated is true for doc.Id: %d", doc.Id)
-            } else if !doc.Is_migrated {
-                log.Printf("doc.Is_migrated is false for doc.Id: %d", doc.Id)
-                updateTasks = append(updateTasks, task)
-            }
+        if doc.Is_migrated {
+            tasks = append(tasks, task)
+            body = "Activate"
+            log.Printf("doc.Is_migrated is true for doc.Id: %d", doc.Id)
+        } else {
+            updateTasks = append(updateTasks, task)
         }
     }
 
