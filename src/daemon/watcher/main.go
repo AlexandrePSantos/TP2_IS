@@ -228,7 +228,6 @@ func ProcessTasks(tasks []Task) {
                 fmt.Println("Updating geographic data:", task.Entity.Filename)
             } else {
                 fmt.Println("Skipping geographic data update task for not migrated document:", task.Entity.Filename)
-                // No need to put the task back in the queue as it will be requeued in the next iteration
             }
         }
     }
