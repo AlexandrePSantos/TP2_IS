@@ -17,7 +17,7 @@ function AllCars() {
 
     /* Updates the data for the current bounds */
     useEffect(() => {
-        const url = `http://localhost:20003/api/makers?page=${page}&size=${PAGE_SIZE}`; 
+        const url = `http://localhost:20004/api/makers?page=${page}&size=${PAGE_SIZE}`; 
 
         fetch(url)
             .then(res => res.json())
@@ -32,17 +32,15 @@ function AllCars() {
                 <Table sx={{minWidth: 650}} aria-label="simple table">
                     <TableHead>
                         <TableRow>
-                            <TableCell component="th" width={"300px"} align="center">ID</TableCell>
-                            <TableCell>Maker</TableCell>
+                            <TableCell component="th" width={"300px"} align="center">Maker</TableCell>
+                            <TableCell component="th" width={"300px"} align="center">Model</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>{
                         car.map((row, index) => ( 
                             <TableRow key={row.id + '-' + index} style={{background: "gray", color: "black"}}>
-                                <TableCell component="td" align="center">{row.id}</TableCell>
-                                <TableCell component="td" scope="row">
-                                    {row.name}
-                                </TableCell>
+                                <TableCell component="td" scope="row" align="center">{row.maker}</TableCell>
+                                <TableCell component="td" scope="row" align="center">{row.model}</TableCell>
                             </TableRow>
                         ))
                     }

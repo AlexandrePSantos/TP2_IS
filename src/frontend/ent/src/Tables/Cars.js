@@ -1,8 +1,9 @@
 import {useEffect, useState} from "react";
 import {
+    Button,
     CircularProgress,
     Pagination,
-    Paper,
+    Paper, 
     Table,
     TableBody,
     TableCell,
@@ -16,18 +17,58 @@ function Cars() {
     const PAGE_SIZE = 10;
     const [page, setPage] = useState(1);
     const [data, setData] = useState(null);
-    const [maxDataSize, setMaxDataSize] = useState(0);
+    const [maxDataSize, setMaxDataSize] = useState(100000);
+
+    useEffect(() => {
+        fetch('http://localhost:20001/cars/pageCount')
+        .then((response) => {
+            if (response.status === 200) {
+                response.json().then((res) => setMaxDataSize(res));
+            }
+        }
+    )
+        .catch((error) => {
+            console.error("Fetch Error:", error);
+        }
+    );
+}, []);
 
     useEffect(() => {
         setData(null);
-        fetch(`http://localhost:20001/api/cars`)
-        .then(response => response.json())
-        .then(data => {
-            setData(data);
-            setMaxDataSize(data.length);
+    
+        fetch(`http://localhost:20001/cars/?page=${page}`)
+        .then((response) => {
+            if (response.status === 200) {
+                response.json().then((res) => setData(res));
+            }
         })
-        .catch(error => console.error('Error:', error));
-    }, [page]);
+        .catch((error) => {
+            console.error("Fetch Error:", error);
+        });
+
+}, [page]);
+
+
+const removeCar = (id) => {
+    fetch(`http://localhost:20001/cars/remove?id=${id}`)
+    .then((response) => {
+        if (response.status === 200) {
+            // Fetch data again after car is removed
+            fetch(`http://localhost:20001/cars/?page=${page}`)
+            .then((response) => {
+                if (response.status === 200) {
+                    response.json().then((res) => setData(res));
+                }
+            })
+            .catch((error) => {
+                console.error("Fetch Error:", error);
+            });
+        }
+    })
+    .catch((error) => {
+        console.error("Fetch Error:", error);
+    });
+}
 
     return (
         <>
@@ -37,13 +78,14 @@ function Cars() {
                 <Table sx={{minWidth: 650}} aria-label="simple table">
                     <TableHead>
                         <TableRow>
-                            <TableCell component="th" width={"1px"} align="center">ID</TableCell>
-                            <TableCell align="center">Maker</TableCell>
-                            <TableCell align="center">Model</TableCell>
-                            <TableCell align="center">Type</TableCell>
-                            <TableCell align="center">DOL</TableCell>
-                            <TableCell align="center">VIN</TableCell>
-                            <TableCell align="center">Year</TableCell>
+                            <TableCell component="th" width={"1px"} align="center">Maker</TableCell>
+                            <TableCell component="th" width={"1px"} align="center">Model</TableCell>
+                            <TableCell component="th" width={"1px"} align="center">Type</TableCell>
+                            <TableCell component="th" width={"1px"} align="center">DOL</TableCell>
+                            <TableCell component="th" width={"1px"} align="center">VIN</TableCell>
+                            <TableCell component="th" width={"1px"} align="center">Year</TableCell>
+                            <TableCell component="th" width={"1px"} align="center">Range</TableCell>
+                            <TableCell component="th" width={"1px"} align="center"></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -51,13 +93,16 @@ function Cars() {
                             data ?
                                 data.map((row) => (
                                     <TableRow key={row.id} style={{background: "gray", color: "black"}} >
-                                        <TableCell component="th" scope="row">{row.id}</TableCell>
-                                        <TableCell align="center">{row.maker}</TableCell>
-                                        <TableCell align="center">{row.model}</TableCell>
-                                        <TableCell align="center">{row.type}</TableCell>
-                                        <TableCell align="center">{row.DOL}</TableCell>
-                                        <TableCell align="center">{row.VIN}</TableCell>
-                                        <TableCell align="center">{row.year}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">{row.maker}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">{row.model}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">{row.type}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">{row.dol}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">{row.vin}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">{row.year}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">{row.range}</TableCell>
+                                        <TableCell component="td" scope="row" align="center">
+                                            <Button size="small" variant="outlined" onClick={() => removeCar(row.id)}>Remove</Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                                 :
@@ -83,8 +128,6 @@ function Cars() {
                     />
                 </div>
             }
-
-
         </>
     );
 }

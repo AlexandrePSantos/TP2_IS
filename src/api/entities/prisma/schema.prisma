@@ -10,24 +10,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// DEMO 
-model Teacher {
-  name       String   @id
-  city       String
-  createdOn  DateTime @default(now()) @map("created_on")
-  updatedOn  DateTime @updatedAt @map("updated_on")
-
-  @@map("teachers")
-}
-
 // Dataset
 model Car {
   id          String   @id @default(uuid())
   maker       String
   model       String
   type        String
-  DOL         Int?
-  VIN         String?
+  dol         Int?
+  vin         String?
   year        Int?
   range       Int?
   locationId  String   @map("location_id")
@@ -40,7 +30,7 @@ model Car {
   cafv        CAFV?    @relation(fields: [cafvId], references: [id])
   utility     Utility? @relation(fields: [utilityId], references: [id])
 
-  @@map("Cars")
+  @@map("cars")
 }
 
 model Location {
@@ -48,13 +38,13 @@ model Location {
   xmlId      String   @map("xml_id")
   state      String
   city       String
-  geom       String?
+  geom       Json?
   createdOn  DateTime @default(now()) @map("created_on")
   updatedOn  DateTime @updatedAt @map("updated_on")
 
   cars       Car[]
 
-  @@map("Locations")
+  @@map("locations")
 }
 
 model CAFV {
@@ -66,7 +56,7 @@ model CAFV {
 
   cars       Car[]
 
-  @@map("CAfv")
+  @@map("cafv")
 }
 
 model Utility {
@@ -78,5 +68,5 @@ model Utility {
 
   cars       Car[]
 
-  @@map("Utility")
+  @@map("utility")
 }

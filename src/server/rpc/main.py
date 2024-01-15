@@ -40,10 +40,8 @@ if __name__ == "__main__":
         server.register_function(get_type)
         server.register_function(get_city)
         
-        # Test the get_tesla function
-        # # # print("Testing the function...")
-        # # # result = get_tesla()
-        # # # print(result)
+        # print("ALL cars registered: ", get_all_makers())
+        # print("HELLOOOOOOOOO")
         
         # start the server
         print(f"Starting the RPC Server in port {PORT}...")
