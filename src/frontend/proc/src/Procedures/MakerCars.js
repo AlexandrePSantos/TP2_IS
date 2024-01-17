@@ -1,51 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { Box, CircularProgress, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import React, {useEffect, useState} from "react";
+import {Box, CircularProgress, Container, FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 
 function MakerCars() {
-    const [cars, setCars] = useState([]);
     const [makers, setMakers] = useState([]);
     const [selectedMaker, setSelectedMaker] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [cars, setCars] = useState(null);
 
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_PROC_URL}/api/makers`)
+        fetch('http://localhost:20004/api/makers')
             .then(response => response.json())
             .then(data => {
                 setMakers(data);
-                console.log(data);  
-                setLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching data: ', error);
-                setLoading(false);
+                console.error('There was an error!', error);
             });
     }, []);
-    
+
     useEffect(() => {
         if (selectedMaker) {
-            setLoading(true);
-            fetch(`${process.env.REACT_APP_API_PROC_URL}/api/maker?maker=${selectedMaker}`)
+            fetch(`http://localhost:20004/api/maker?maker=${selectedMaker}`)
                 .then(response => response.json())
                 .then(data => {
                     setCars(data);
-                    console.log(data);
-                    setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching data: ', error);
-                    setLoading(false);
+                    console.error('There was an error!', error);
                 });
         }
     }, [selectedMaker]);
 
-    if (loading) {
-        return <CircularProgress />;
-    }
-
     return (
         <>
-            <h1>Maker Cars</h1>
-    
+            <h1>Top Teams</h1>
+
             <Container maxWidth="100%"
                        sx={{backgroundColor: 'background.default', padding: "2rem", borderRadius: "1rem"}}>
                 <Box>
@@ -69,7 +57,7 @@ function MakerCars() {
                     </FormControl>
                 </Box>
             </Container>
-    
+
             <Container maxWidth="100%" sx={{
                 backgroundColor: 'info.dark',
                 padding: "2rem",
@@ -77,16 +65,35 @@ function MakerCars() {
                 borderRadius: "1rem",
                 color: "white"
             }}>
-                <h2>Results <small>(PROC)</small></h2>
-                {cars.map(car => (
-                    <Box key={car.id}>
-                        <h3>{car.model}</h3>
-                        <p>Year: {car.year}</p>
-                    </Box>
-                ))}
+                <h2>Results - PROC</h2>
+                {
+                    cars ?
+                        <ul>
+                            {
+                                cars.map(car => 
+                                    <li key={car.id}>
+                                        DOL: {car.DOL}
+                                        <ul>
+                                            <li>VIN: {car.VIN}</li>
+                                            <li>CAFV: {car.cafv_ref}</li>
+                                            <li>City: {car.city_ref}</li>
+                                            <li>ID: {car.id}</li>
+                                            <li>Model: {car.model}</li>
+                                            <li>Range: {car.range}</li>
+                                            <li>Type: {car.type}</li>
+                                            <li>Utility: {car.utility_ref}</li>
+                                            <li>Year: {car.year}</li>
+                                        </ul>
+                                    </li>)
+                            }
+                        </ul> :
+                        selectedMaker ? <CircularProgress/> : "--"
+                }
             </Container>
         </>
     );
 }
 
 export default MakerCars;
+
+

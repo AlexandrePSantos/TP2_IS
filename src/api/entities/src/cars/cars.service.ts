@@ -22,17 +22,4 @@ export class CarsService {
             where: { id }
         });
     }
-
-    // async update(id: string, field: string, value: number): Promise<any> {
-    //     return this.prisma.car.update({
-    //         where: { id },
-    //         data: { [field]: value }
-    //     });
-    // }
-
-    // async createCar({ maker, model, year, range, type, location }): Promise<any> {
-    //     return this.prisma.car.create({
-    //         data: { maker, model, year, range, type, location }
-    //     });
-    // }
 }

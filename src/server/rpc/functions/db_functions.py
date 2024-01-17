@@ -78,16 +78,20 @@ def create_car_dict(car, exclude=None):
     if exclude and exclude in car_dict:
         del car_dict[exclude]
     return car_dict
-    
-# Query 0 - Get all makers
-def get_all_makers():
-    cars = root.xpath("//Maker/Model/Car")
-    return [create_car_dict(car) for car in cars]
 
-# # Query 0 - Get all makers
-# def get_all_makers():
-#     makers = root.xpath("//Maker")
-#     return [maker.get("name") for maker in makers]
+# Query 0 - Get all
+def get_all_makers():
+    makers = root.xpath("//Maker")
+    return [maker.get("name") for maker in makers]
+
+def get_all_years():
+    return list(set(str(year) for year in root.xpath("//Car/@year")))
+
+def get_all_elegibles():
+    return [{'id': elig.get('id'), 'name': elig.get('name')} for elig in root.xpath("//CAFVEligibility/Eligibility")]
+
+def get_all_cities():
+    return [{'id': city.get('id'), 'name': city.get('name')} for city in root.xpath("//Locations//City")]
 
 # Query 1 - Get all cars from maker
 def get_maker(maker):
@@ -103,11 +107,6 @@ def get_year(year):
 def get_elegible(cafv):
     cars = root.xpath(f"//Car[@cafv_ref='{cafv}']")
     return [create_car_dict(car, exclude="cafv") for car in cars]
-
-# Query 4 - Get all cars with model type "Plug-in Hybrid Electric Vehicle (PHEV)"
-def get_type(phev):
-    cars = root.xpath(f"//Model[@type='{phev}']/Car")
-    return [create_car_dict(car, exclude="type") for car in cars]
 
 # Query 5 - Get all cars located in "Seattle"
 def get_city(city):

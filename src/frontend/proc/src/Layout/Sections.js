@@ -1,25 +1,9 @@
-import TopTeams from "../Procedures/TopTeams";
-import AllCars from "../Procedures/AllCars";
 import MakerCars from "../Procedures/MakerCars";
 import YearCars from "../Procedures/YearCars";
 import ElegibleCars from "../Procedures/ElegibleCars";
-import TypeCars from "../Procedures/TypeCars";
 import CityCars from "../Procedures/CityCars";
 
 const Sections = [
-
-    {
-        id: "top-teams",
-        label: "Top Teams",
-        content: <TopTeams/>
-    },
-
-    {
-        id: "all-cars",
-        label: "All Cars",
-        content: <AllCars/>
-    },
-
     {
         id: "maker-cars",
         label: "Cars by maker",
@@ -36,12 +20,6 @@ const Sections = [
         id: "elegible-cars",
         label: "Cars by elegibility",
         content: <ElegibleCars/>
-    },
-
-    {
-        id: "type-cars",
-        label: "Cars by type",
-        content: <TypeCars/>
     },
 
     {
