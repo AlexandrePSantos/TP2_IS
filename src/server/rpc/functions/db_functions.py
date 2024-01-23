@@ -108,7 +108,7 @@ def get_elegible(cafv):
     cars = root.xpath(f"//Car[@cafv_ref='{cafv}']")
     return [create_car_dict(car, exclude="cafv") for car in cars]
 
-# Query 5 - Get all cars located in "Seattle"
+# Query 4 - Get all cars located in "Seattle"
 def get_city(city):
     cars = root.xpath(f"//Car[@city_ref='{city}']")
     return [create_car_dict(car, exclude="city_ref") for car in cars]

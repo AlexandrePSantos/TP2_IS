@@ -67,7 +67,6 @@ if __name__ == "__main__":
           
     while True:
         try:
-            # print(f"User: {user}, Password: {password}, VHost: {vhost}")
             connection = pika.BlockingConnection(
                 pika.ConnectionParameters(host='broker', virtual_host=vhost, credentials=credentials))
             channel = connection.channel()
@@ -79,6 +78,5 @@ if __name__ == "__main__":
             print('Waiting for messages. To exit press CTRL+C')
             channel.start_consuming()
         except pika.exceptions.AMQPConnectionError:
-            # print(f"User: {user}, Password: {password}, VHost: {vhost}")
             print("Connection was closed, retrying...")
             time.sleep(5)  # wait for 5 seconds before retrying

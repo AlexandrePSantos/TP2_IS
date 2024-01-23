@@ -31,7 +31,9 @@ class DBAccess:
             connection = self.connect_connection()
             cursor = self.connect_cursor(connection)
 
-            cursor.execute(f"insert into converted_documents(src,file_size,dst) values ('{csv_path}', {file_size}, '{xml_path}')")
+            # cursor.execute(f"insert into converted_documents(src,file_size,dst) values ('{csv_path}', {file_size}, '{xml_path}')")
+            query = "insert into converted_documents(src,file_size,dst) values (%s, %s, %s)"
+            cursor.execute(query, (csv_path, file_size, xml_path))
 
             connection.commit()
 

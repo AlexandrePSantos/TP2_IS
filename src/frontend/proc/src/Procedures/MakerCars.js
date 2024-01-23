@@ -32,7 +32,7 @@ function MakerCars() {
 
     return (
         <>
-            <h1>Top Teams</h1>
+            <h1>Makers</h1>
 
             <Container maxWidth="100%"
                        sx={{backgroundColor: 'background.default', padding: "2rem", borderRadius: "1rem"}}>

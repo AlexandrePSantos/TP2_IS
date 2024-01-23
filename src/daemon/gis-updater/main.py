@@ -35,11 +35,9 @@ def callback(ch, method, properties, body):
     print(f"Received message: {message}")
 
     if message == "Activate":
-        # print(f"Getting up to {ENTITIES_PER_ITERATION} entities without coordinates...") // comentado por razoes de teste
         print(f"Getting all entities without coordinates...")
         connection = psycopg2.connect(user="is", password="is", host="db-rel", database="is")
         cur = connection.cursor()
-        # cur.execute(f"SELECT id, city, state FROM Locations WHERE geom IS NULL LIMIT {ENTITIES_PER_ITERATION}") // comentado por razoes de teste
         cur.execute(f"SELECT id, city, state FROM Locations WHERE geom IS NULL")
         countries = cur.fetchall()
 
